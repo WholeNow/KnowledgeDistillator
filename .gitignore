@@ -222,3 +222,7 @@ __marimo__/
 
 # Results
 results/
+
+# Datasets and CSVs
+dataset_distilled_*
+*.csv
