@@ -1,34 +1,34 @@
 # KnowledgeDistillator
 
-Progetto di **Knowledge Distillation** per NLP: le risposte di un modello Teacher vengono usate come pseudo-label per addestrare un modello Student più piccolo, su due task:
+**Knowledge Distillation** project for the Deep Learning and Applications course: the responses of a Teacher model are used as pseudo-labels to train a smaller Student model on two tasks:
 
-- **Summarization** — riassunto di dialoghi (dataset SAMSum)
-- **Question Answering** — risposta a domande (dataset Databricks Dolly 15k)
-
----
-
-## Indice
-
-1. [Come funziona](#come-funziona)
-2. [Modelli](#modelli)
-3. [Dataset](#dataset)
-4. [Struttura del progetto](#struttura-del-progetto)
-5. [Guida passo passo: Training](#guida-passo-passo-training)
-6. [Guida passo passo: Chat](#guida-passo-passo-chat)
-7. [Push su HuggingFace](#push-su-huggingface)
-8. [Script di utilità](#script-di-utilità)
+- **Summarization** — summarizing dialogues (SAMSum dataset)
+- **Question Answering** — answering questions (Databricks Dolly 15k dataset)
 
 ---
 
-## Come funziona
+## Table of Contents
+
+1. [How it works](#how-it-works)
+2. [Models](#models)
+3. [Datasets](#datasets)
+4. [Project Structure](#project-structure)
+5. [Step-by-step Guide: Training](#step-by-step-guide-training)
+6. [Step-by-step Guide: Chat](#step-by-step-guide-chat)
+7. [Push to HuggingFace](#push-to-huggingface)
+8. [Utility Scripts](#utility-scripts)
+
+---
+
+## How it works
 
 ```
-Dataset originale
+Original Dataset
       │
       ▼
 ┌─────────────┐    pseudo-label    ┌─────────────────┐
-│   Teacher   │ ─────────────────► │  Dataset        │
-│  (1.1B–4B)  │                    │  Distillato     │
+│   Teacher   │ ─────────────────► │ Distilled       │
+│  (1.1B–4B)  │                    │ Dataset         │
 └─────────────┘                    └────────┬────────┘
                                             │  fine-tuning (SFT)
                                             ▼
@@ -38,57 +38,57 @@ Dataset originale
                                    └─────────────────┘
 ```
 
-1. Il **Teacher** (modello grande) legge ogni esempio del dataset e genera una risposta.
-2. Queste risposte diventano le **pseudo-label** del dataset distillato.
-3. Lo **Student** (modello piccolo) viene fine-tunato su questo dataset con SFT.
-4. Il risultato è uno Student che si avvicina alle capacità del Teacher pur avendo 8× meno parametri.
+1. The **Teacher** (large model) reads each example from the dataset and generates a response.
+2. These responses become the **pseudo-labels** of the distilled dataset.
+3. The **Student** (small model) is fine-tuned on this dataset with SFT.
+4. The result is a Student that approaches the capabilities of the Teacher while having 8× fewer parameters.
 
 ---
 
-## Modelli
+## Models
 
-| Ruolo | Modello | Parametri |
+| Role | Model | Parameters |
 |---|---|---|
-| **Teacher** (opzione A) | [TinyLlama/TinyLlama-1.1B-Chat-v1.0](https://huggingface.co/TinyLlama/TinyLlama-1.1B-Chat-v1.0) | 1.1B |
-| **Teacher** (opzione B) | [Qwen/Qwen2.5-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct) | 1.5B |
-| **Teacher** (opzione C) | [Qwen/Qwen3-4B-Instruct-2507](https://huggingface.co/Qwen/Qwen3-4B-Instruct-2507) | 4B |
+| **Teacher** (option A) | [TinyLlama/TinyLlama-1.1B-Chat-v1.0](https://huggingface.co/TinyLlama/TinyLlama-1.1B-Chat-v1.0) | 1.1B |
+| **Teacher** (option B) | [Qwen/Qwen2.5-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct) | 1.5B |
+| **Teacher** (option C) | [Qwen/Qwen3-4B-Instruct-2507](https://huggingface.co/Qwen/Qwen3-4B-Instruct-2507) | 4B |
 | **Student** | [HuggingFaceTB/SmolLM-135M](https://huggingface.co/HuggingFaceTB/SmolLM-135M) | 135M |
 
-> Su GPU T4 (Colab gratuito) si consiglia `TinyLlama` senza quantizzazione, oppure `Qwen2.5` o `Qwen3` con `QUANTIZE_TEACHER = True` (4-bit NF4).
+> On a T4 GPU (free Colab), `TinyLlama` without quantization is recommended, or `Qwen2.5` or `Qwen3` with `QUANTIZE_TEACHER = True` (4-bit NF4).
 
 ---
 
-## Dataset
+## Datasets
 
 ### SAMSum (`knkarthick/samsum`) — Summarization
-Dialoghi in stile chat con riassunti scritti da annotatori umani. ~16.000 esempi, campi: `dialogue`, `summary`.
+Chat-style dialogues with summaries written by human annotators. ~16,000 examples, fields: `dialogue`, `summary`.
 
 ### Databricks Dolly 15k (`databricks/databricks-dolly-15k`) — Question Answering
-15.000 domande con risposta scritte dai dipendenti Databricks. Campi: `instruction` (domanda), `context` (testo di supporto, opzionale), `response` (risposta), `category`.
+15,000 questions and answers written by Databricks employees. Fields: `instruction` (question), `context` (supporting text, optional), `response` (answer), `category`.
 
 ---
 
-## Struttura del progetto
+## Project Structure
 
 ```
 KnowledgeDistillator/
 │
-├── training.ipynb          ← pipeline completa: Teacher + Student + Valutazione
-├── Chat.ipynb              ← chat interattiva con il modello distillato
-├── push_to_hub.py          ← script per caricare i modelli su HuggingFace
+├── training.ipynb          ← complete pipeline: Teacher + Student + Evaluation
+├── Chat.ipynb              ← interactive chat with the distilled model
+├── push_to_hub.py          ← script to upload models to HuggingFace
 ├── requirements.txt
 │
 ├── scripts/
-│   ├── export_dataset_to_csv.py       ← esporta dataset HF in CSV
-│   ├── normalize_teacher_summaries.py ← rimuove tag <|assistant|> dall'output Teacher
-│   └── plot_metrics.py                ← grafici comparativi delle metriche
+│   ├── export_dataset_to_csv.py       ← exports HF dataset to CSV
+│   ├── normalize_teacher_summaries.py ← removes <|assistant|> tags from Teacher output
+│   └── plot_metrics.py                ← comparative metric charts
 │
 └── results/
     ├── QA/
     │   ├── prompt_1/
-    │   │   ├── model/            ← modello Student finale
-    │   │   ├── checkpoints/      ← checkpoint intermedi del training
-    │   │   └── dataset_teacher/  ← dataset distillato dal Teacher
+    │   │   ├── model/            ← final Student model
+    │   │   ├── checkpoints/      ← intermediate training checkpoints
+    │   │   └── dataset_teacher/  ← dataset distilled by the Teacher
     │   ├── prompt_2/
     │   └── prompt_3/
     └── Summarization/
@@ -99,171 +99,171 @@ KnowledgeDistillator/
 
 ---
 
-## Risultati
+## Results
 
-Metriche del **Student Distillato** (SmolLM 135M) valutate su 150 campioni del test set. Teacher: TinyLlama 1.1B.
+Metrics of the **Distilled Student** (SmolLM 135M) evaluated on 150 samples from the test set. Teacher: TinyLlama 1.1B.
 
 ### Summarization — SAMSum
 
-| Prompt | Modello | ROUGE-1 | ROUGE-2 | ROUGE-L | BERTScore-F1 |
+| Prompt | Model | ROUGE-1 | ROUGE-2 | ROUGE-L | BERTScore-F1 |
 |:---:|---|:---:|:---:|:---:|:---:|
-| 1 — negazioni | [Marchisceddu/smollm-sum-prompt1](https://huggingface.co/Marchisceddu/smollm-sum-prompt1) | 0.1777 | 0.0525 | 0.1405 | 0.8599 |
-| 2 — diretto | [Marchisceddu/smollm-sum-prompt2](https://huggingface.co/Marchisceddu/smollm-sum-prompt2) | 0.1789 | 0.0494 | 0.1364 | 0.8534 |
-| **3 — minimale** | [Marchisceddu/smollm-sum-prompt3](https://huggingface.co/Marchisceddu/smollm-sum-prompt3) | **0.2440** | **0.0667** | **0.1857** | **0.8683** |
+| 1 — negations | [Marchisceddu/smollm-sum-prompt1](https://huggingface.co/Marchisceddu/smollm-sum-prompt1) | 0.1777 | 0.0525 | 0.1405 | 0.8599 |
+| 2 — direct | [Marchisceddu/smollm-sum-prompt2](https://huggingface.co/Marchisceddu/smollm-sum-prompt2) | 0.1789 | 0.0494 | 0.1364 | 0.8534 |
+| **3 — minimal** | [Marchisceddu/smollm-sum-prompt3](https://huggingface.co/Marchisceddu/smollm-sum-prompt3) | **0.2440** | **0.0667** | **0.1857** | **0.8683** |
 
 ### Question Answering — Dolly 15k
 
-| Prompt | Modello | ROUGE-1 | ROUGE-2 | ROUGE-L | BERTScore-F1 |
+| Prompt | Model | ROUGE-1 | ROUGE-2 | ROUGE-L | BERTScore-F1 |
 |:---:|---|:---:|:---:|:---:|:---:|
-| **1 — negazioni** | [Marchisceddu/smollm-qa-prompt1](https://huggingface.co/Marchisceddu/smollm-qa-prompt1) | **0.2594** | **0.1040** | **0.1992** | **0.8540** |
-| 2 — diretto | [Marchisceddu/smollm-qa-prompt2](https://huggingface.co/Marchisceddu/smollm-qa-prompt2) | 0.2468 | 0.0978 | 0.1884 | 0.8507 |
-| 3 — minimale | [Marchisceddu/smollm-qa-prompt3](https://huggingface.co/Marchisceddu/smollm-qa-prompt3) | 0.2441 | 0.0936 | 0.1830 | 0.8506 |
+| **1 — negations** | [Marchisceddu/smollm-qa-prompt1](https://huggingface.co/Marchisceddu/smollm-qa-prompt1) | **0.2594** | **0.1040** | **0.1992** | **0.8540** |
+| 2 — direct | [Marchisceddu/smollm-qa-prompt2](https://huggingface.co/Marchisceddu/smollm-qa-prompt2) | 0.2468 | 0.0978 | 0.1884 | 0.8507 |
+| 3 — minimal | [Marchisceddu/smollm-qa-prompt3](https://huggingface.co/Marchisceddu/smollm-qa-prompt3) | 0.2441 | 0.0936 | 0.1830 | 0.8506 |
 
-> Tutti i modelli sono pubblici e si caricano automaticamente in `Chat.ipynb` senza token.
+> All models are public and are automatically loaded in `Chat.ipynb` without a token.
 
 ---
 
-## Guida: Training
+## Guide: Training
 
-### 1. Apri il notebook su Colab
+### 1. Open the notebook in Colab
 
 <a target="_blank" href="https://colab.research.google.com/github/WholeNow/KnowledgeDistillator/blob/main/training.ipynb">
   <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
 </a>
 
-### 2. Abilita la GPU
+### 2. Enable GPU
 
-**Runtime → Cambia tipo di runtime → T4 GPU** (o A100 se disponibile) → Salva.
+**Runtime → Change runtime type → T4 GPU** (or A100 if available) → Save.
 
-### 3. Configura i parametri
+### 3. Configure parameters
 
-Nella cella **CONFIGURAZIONE**, modifica i valori in base al tuo esperimento:
+In the **CONFIGURATION** cell, modify the values according to your experiment:
 
 ```python
 TASK        = "summarization"               # "summarization" | "question_answering"
-PROMPT_TYPE = 3                             # 1 | 2 | 3  (vedi tabella sotto)
+PROMPT_TYPE = 3                             # 1 | 2 | 3  (see table below)
 
 TEACHER_MODEL_ID = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
-QUANTIZE_TEACHER = True                     # True → 4-bit NF4 (risparmia VRAM)
+QUANTIZE_TEACHER = True                     # True → 4-bit NF4 (saves VRAM)
 
 STUDENT_MODEL_ID = "HuggingFaceTB/SmolLM-135M"
 
-MAX_TRAIN_SAMPLES = '10000'                 # campioni per la generazione Teacher
-MAX_TEST_SAMPLES  = '150'                   # campioni per la valutazione finale
+MAX_TRAIN_SAMPLES = '10000'                 # samples for Teacher generation
+MAX_TEST_SAMPLES  = '150'                   # samples for final evaluation
 ```
 
-**Tipi di prompt:**
+**Prompt Types:**
 
-| `PROMPT_TYPE` | Stile | Quando usarlo |
+| `PROMPT_TYPE` | Style | When to use it |
 |:---:|---|---|
-| `1` | Prompt con negazioni e regole esplicite | Modello tende a copiare il dialogo |
-| `2` | Prompt con domande dirette e penalità | Massima qualità richiesta al Teacher |
-| `3` | Prompt minimale | Veloce, ideale per baseline |
+| `1` | Prompt with negations and explicit rules | Model tends to copy the dialogue |
+| `2` | Prompt with direct questions and penalties | Maximum quality required from Teacher |
+| `3` | Minimal prompt | Fast, ideal for baseline |
 
-### 4. Esegui le celle in ordine
+### 4. Run the cells in order
 
-Il notebook è diviso in tre sezioni principali:
+The notebook is divided into three main sections:
 
-**Sezione 1 — Generazione dataset distillato (Teacher)**
-- Carica il dataset originale.
-- Costruisce i prompt con il tipo scelto.
-- Il Teacher genera le pseudo-label per ogni esempio.
-- Il dataset distillato viene salvato su disco in `results/{TASK}/prompt_{PROMPT_TYPE}/dataset_teacher/`.
-- Se il dataset esiste già, viene caricato direttamente (nessuna rigenerazione).
+**Section 1 — Distilled dataset generation (Teacher)**
+- Loads the original dataset.
+- Builds the prompts with the chosen type.
+- The Teacher generates the pseudo-labels for each example.
+- The distilled dataset is saved to disk in `results/{TASK}/prompt_{PROMPT_TYPE}/dataset_teacher/`.
+- If the dataset already exists, it is loaded directly (no regeneration).
 
-**Sezione 2 — Training dello Student**
-- Carica il dataset distillato.
-- Aggiunge i token speciali `<|im_start|>` e `<|im_end|>` al tokenizer.
-- Inietta il template ChatML.
-- Avvia il fine-tuning con `SFTTrainer` (loss solo sui token dell'assistant).
-- Salva il modello finale in `results/{TASK}/prompt_{PROMPT_TYPE}/model/`.
+**Section 2 — Student Training**
+- Loads the distilled dataset.
+- Adds the special tokens `<|im_start|>` and `<|im_end|>` to the tokenizer.
+- Injects the ChatML template.
+- Starts fine-tuning with `SFTTrainer` (loss only on assistant tokens).
+- Saves the final model in `results/{TASK}/prompt_{PROMPT_TYPE}/model/`.
 
-**Sezione 3 — Valutazione**
-- Confronta **Teacher**, **Student Baseline** (zero-shot) e **Student Distillato**.
-- Metriche calcolate: ROUGE-1, ROUGE-2, ROUGE-L, BERTScore-F1, Perplexity, Latenza/Token.
-- Genera un grafico comparativo e lo salva come `kd_results_{TASK}.png`.
-- Stampa 3 esempi qualitativi casuali.
+**Section 3 — Evaluation**
+- Compares **Teacher**, **Student Baseline** (zero-shot) and **Distilled Student**.
+- Calculated metrics: ROUGE-1, ROUGE-2, ROUGE-L, BERTScore-F1, Perplexity, Latency/Token.
+- Generates a comparative chart and saves it as `kd_results_{TASK}.png`.
+- Prints 3 random qualitative examples.
 
-### 5. Salva il modello
+### 5. Save the model
 
-Al termine del training, il modello è già salvato localmente nella sessione Colab.
+At the end of training, the model is already saved locally in the Colab session.
 
 ---
 
-## Guida: Chat
+## Guide: Chat
 
-### 1. Apri il notebook su Colab
+### 1. Open the notebook in Colab
 
 <a target="_blank" href="https://colab.research.google.com/github/WholeNow/KnowledgeDistillator/blob/main/Chat.ipynb">
   <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
 </a>
 
-### 2. Abilita la GPU
+### 2. Enable GPU
 
-**Runtime → Cambia tipo di runtime → T4 GPU** → Salva.
+**Runtime → Change runtime type → T4 GPU** → Save.
 
-### 3. Configura task, prompt e modello
+### 3. Configure task, prompt, and model
 
-Nella cella **CONFIGURAZIONE**:
+In the **CONFIGURATION** cell:
 
 ```python
 TASK        = "question_answering"   # "summarization" | "question_answering"
-PROMPT_TYPE = 1                      # deve corrispondere a quello usato nel training
+PROMPT_TYPE = 1                      # must match the one used in training
 
 MODELS = {
-    # (task,                prompt_type): "ID HuggingFace o percorso locale"
-    ("question_answering",  1): "Marchisceddu/smollm-qa-prompt1",   # ← modello pubblico
-    ("question_answering",  2): "",                                   # ← non disponibile
+    # (task,                prompt_type): "HuggingFace ID or local path"
+    ("question_answering",  1): "Marchisceddu/smollm-qa-prompt1",   # ← public model
+    ("question_answering",  2): "",                                   # ← not available
     ("summarization",       3): "Marchisceddu/smollm-sum-prompt3",
     # ...
 }
 ```
 
-> Se `MODELS[(TASK, PROMPT_TYPE)]` è vuoto, il notebook cerca automaticamente il modello in locale (`./results/student_distilled_{TASK}_final`), utile se hai appena finito il training nella stessa sessione.
+> If `MODELS[(TASK, PROMPT_TYPE)]` is empty, the notebook automatically looks for the model locally (`./results/student_distilled_{TASK}_final`), useful if you just finished training in the same session.
 
-I modelli con ID HuggingFace vengono **scaricati automaticamente**, senza token.
+Models with HuggingFace IDs are **downloaded automatically**, without a token.
 
-### 4. Esegui tutte le celle
+### 4. Run all cells
 
-Il modello si carica in ~30 secondi su T4. Poi parte la chat interattiva nell'ultima cella.
+The model loads in ~30 seconds on a T4. Then the interactive chat starts in the last cell.
 
-### 5. Usa la chat
+### 5. Use the chat
 
-**Question Answering** — la chat fa due domande separate:
+**Question Answering** — the chat asks two separate questions:
 ```
-Tu: What is the boiling point of water?
-Context (opzionale):                       ← premi Invio per saltare
-Modello: The boiling point of water is 100°C at sea level.
-```
-
-Con contesto:
-```
-Tu: What is the capital of France?
-Context (opzionale): France is a country in Western Europe. Its capital is Paris.
-Modello: The capital of France is Paris.
+You: What is the boiling point of water?
+Context (optional):                        ← press Enter to skip
+Model: The boiling point of water is 100°C at sea level.
 ```
 
-**Summarization** — incolla il dialogo su più righe, poi premi Invio su una riga vuota:
+With context:
 ```
-Tu (dialogo): Hannah: Hey, are you free tonight?
-              Peter: Yeah, what's up?
-              Hannah: Let's grab dinner at that new place downtown.
-              Peter: Sounds great, 7pm?
-              Hannah: Perfect!
-                                           ← riga vuota per inviare
-Modello: Hannah and Peter make plans to have dinner together at a new restaurant downtown.
+You: What is the capital of France?
+Context (optional): France is a country in Western Europe. Its capital is Paris.
+Model: The capital of France is Paris.
 ```
 
-Scrivi `exit` o `quit` per terminare la chat.
+**Summarization** — paste the dialogue on multiple lines, then press Enter on an empty line:
+```
+You (dialogue): Hannah: Hey, are you free tonight?
+                Peter: Yeah, what's up?
+                Hannah: Let's grab dinner at that new place downtown.
+                Peter: Sounds great, 7pm?
+                Hannah: Perfect!
+                                             ← empty line to send
+Model: Hannah and Peter make plans to have dinner together at a new restaurant downtown.
+```
+
+Type `exit` or `quit` to end the chat.
 
 ---
 
-## Script di utilità
+## Utility Scripts
 
-Gli script in `scripts/` si eseguono da riga di comando (o da Colab con `!`).
+The scripts in `scripts/` are run from the command line (or from Colab with `!`).
 
 ### `export_dataset_to_csv.py`
-Converte un dataset HuggingFace salvato su disco in un file CSV.
+Converts a HuggingFace dataset saved on disk to a CSV file.
 ```bash
 python scripts/export_dataset_to_csv.py \
   --dataset_path ./results/QA/prompt_1/dataset_teacher \
@@ -271,14 +271,14 @@ python scripts/export_dataset_to_csv.py \
 ```
 
 ### `normalize_teacher_summaries.py`
-Rimuove eventuali tag `<|assistant|>` o artefatti dall'output del Teacher e salva una versione pulita del dataset.
+Removes any `<|assistant|>` tags or artifacts from the Teacher's output and saves a clean version of the dataset.
 ```bash
 python scripts/normalize_teacher_summaries.py \
   --dataset_path ./results/QA/prompt_1/dataset_teacher
 ```
 
 ### `plot_metrics.py`
-Genera grafici comparativi delle metriche (ROUGE, BERTScore, Perplexity) a partire dai risultati salvati.
+Generates comparative metric charts (ROUGE, BERTScore, Perplexity) from the saved results.
 ```bash
 python scripts/plot_metrics.py --results_dir ./results/QA
 ```
