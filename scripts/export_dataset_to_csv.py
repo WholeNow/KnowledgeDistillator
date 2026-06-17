@@ -6,23 +6,24 @@ import os
 
 def dataset_to_csv(dataset_path, output_csv="dataset.csv"):
     """
-    Salva il dataset in formato CSV
+    Exports a HuggingFace dataset saved on disk to a CSV format.
 
-    :param dataset_path: Percorso del dataset da esportare
-    :param output_csv: Percorso del file CSV di output
+    Args:
+        dataset_path (str): Local path to the dataset to export.
+        output_csv (str): Path for the output CSV file. Defaults to "dataset.csv".
     """
     if not os.path.exists(dataset_path):
-        print(f"Errore: Il percorso del dataset '{dataset_path}' non esiste.")
+        print(f"Error: Dataset path '{dataset_path}' does not exist.")
         return
 
-    print(f"Caricamento del dataset da: {dataset_path} ...")
+    print(f"Loading dataset from: {dataset_path} ...")
     try:
         ds = load_from_disk(dataset_path)
     except Exception as e:
-        print(f"Errore durante il caricamento del dataset: {e}")
+        print(f"Error loading dataset: {e}")
         return
 
-    print(f"Esportazione in corso verso '{output_csv}' ...")
+    print(f"Exporting to '{output_csv}' ...")
     try:
         with open(output_csv, "w", newline="", encoding="utf-8") as f:
             writer = None
@@ -30,27 +31,27 @@ def dataset_to_csv(dataset_path, output_csv="dataset.csv"):
                 clean = {k: json.dumps(v, ensure_ascii=False) if isinstance(v, (list, dict)) else v
                         for k, v in row.items()}
                 if writer is None:
-                    # Imposta il delimitatore su punto e virgola e forza i doppi apici sui testi
+                    # Set semicolon as delimiter and force double quotes for string fields
                     writer = csv.DictWriter(f, fieldnames=clean.keys(), delimiter=';', quoting=csv.QUOTE_ALL)
                     writer.writeheader()
                 writer.writerow(clean)
-        print(f"Dataset esportato con successo in '{output_csv}'!")
+        print(f"Dataset successfully exported to '{output_csv}'!")
     except Exception as e:
-        print(f"Errore durante la scrittura del CSV: {e}")
+        print(f"Error writing to CSV: {e}")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Esporta un dataset HuggingFace (salvato su disco) in formato CSV.")
+    parser = argparse.ArgumentParser(description="Export a HuggingFace dataset (saved on disk) to CSV format.")
     parser.add_argument(
         "--dataset_path", 
         type=str, 
         required=True, 
-        help="Il percorso locale del dataset HuggingFace da esportare (es. ./dataset_distilled_summarization_teacher)"
+        help="Local path to the HuggingFace dataset to export (e.g., ./dataset_distilled_summarization_teacher)."
     )
     parser.add_argument(
         "--output_csv", 
         type=str, 
         default="dataset.csv", 
-        help="Il nome o percorso del file CSV di output (default: dataset.csv)"
+        help="Name or path of the output CSV file (default: dataset.csv)."
     )
     
     args = parser.parse_args()

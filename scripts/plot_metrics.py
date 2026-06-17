@@ -5,8 +5,15 @@ import os
 
 def clean_value(x, col):
     """
-    Pulisce e converte i valori della tabella.
-    Gestisce casi come '1.355.613' convertendoli correttamente a float o int.
+    Cleans and converts table values to their appropriate data types.
+    Handles anomalies such as '1.355.613' by converting them correctly to float or int.
+    
+    Args:
+        x: The value to clean.
+        col (str): The column name to determine the expected data type.
+        
+    Returns:
+        The cleaned value as an int, float, or None.
     """
     if pd.isna(x):
         return x
@@ -16,63 +23,63 @@ def clean_value(x, col):
         return None
         
     if col in ['Step', 'Num Tokens']:
-        # Rimuove i punti delle migliaia per i numeri interi
+        # Remove thousands separators for integers
         x = x.replace('.', '').replace(',', '')
         try:
             return int(x)
         except ValueError:
             return None
     else:
-        # Per Loss, Entropy e Accuracy
-        # Trasforma formati anomali come '1.355.613' in '1.355613'
+        # For Loss, Entropy, and Accuracy
+        # Transforms anomalous formats like '1.355.613' to '1.355613'
         parts = x.split('.')
         if len(parts) > 2:
             x = parts[0] + '.' + ''.join(parts[1:])
-        x = x.replace(',', '.') # Gestisce la virgola come separatore decimale se presente
+        x = x.replace(',', '.') # Handles comma as decimal separator if present
         try:
             return float(x)
         except ValueError:
             return None
 
 def main():
-    parser = argparse.ArgumentParser(description='Genera grafici dalle metriche di addestramento.')
-    parser.add_argument('input_file', type=str, help='Percorso del file di input (es. dati.tsv). I dati devono essere separati da Tabulazione (TAB).')
-    parser.add_argument('--output_dir', type=str, default='.', help='Cartella in cui salvare i grafici generati (default: cartella corrente).')
+    parser = argparse.ArgumentParser(description='Generates plots from training metrics.')
+    parser.add_argument('input_file', type=str, help='Path to the input file (e.g., data.tsv). Data must be Tab-Separated (TAB).')
+    parser.add_argument('--output_dir', type=str, default='.', help='Directory where the generated plots will be saved (default: current directory).')
     
     args = parser.parse_args()
     
     if not os.path.exists(args.input_file):
-        print(f"Errore: il file {args.input_file} non esiste.")
+        print(f"Error: The file {args.input_file} does not exist.")
         return
 
-    print(f"Leggendo i dati da {args.input_file}...")
+    print(f"Reading data from {args.input_file}...")
     try:
-        # Legge il file assumendo che sia separato da tab
+        # Read the file assuming it's tab-separated
         df = pd.read_csv(args.input_file, sep='\t')
         
-        # Se c'è una sola colonna, forse non era separato da tab
+        # If there's only one column, it might not be tab-separated
         if len(df.columns) == 1:
-            print("Attenzione: sembra che il file non sia separato da tab (TAB). Provo a usare gli spazi (potrebbe fallire se i nomi delle colonne hanno spazi).")
-            # Prova con separatori di spazio multipli (es. 2+ spazi)
+            print("Warning: The file does not appear to be tab-separated (TAB). Trying to use spaces as separators (may fail if column names contain spaces).")
+            # Try with multiple space separators (e.g., 2+ spaces)
             df = pd.read_csv(args.input_file, sep=r'\s{2,}', engine='python')
             
     except Exception as e:
-        print(f"Errore durante la lettura del file: {e}")
+        print(f"Error reading the file: {e}")
         return
 
-    # Pulisce i nomi delle colonne per evitare spazi extra
+    # Clean column names to remove any extra whitespaces
     df.columns = [c.strip() for c in df.columns]
-    print(f"Colonne trovate: {', '.join(df.columns)}")
+    print(f"Found columns: {', '.join(df.columns)}")
 
-    # Applica la pulizia dei dati
+    # Apply data cleaning
     for col in df.columns:
         if col in ['Step', 'Num Tokens', 'Training Loss', 'Validation Loss', 'Entropy', 'Mean Token Accuracy']:
             df[col] = df[col].apply(lambda x: clean_value(x, col))
 
-    # Assicurati che l'output dir esista
+    # Ensure the output directory exists
     os.makedirs(args.output_dir, exist_ok=True)
 
-    # 1. Grafico per Loss (Training e Validation)
+    # 1. Plot for Loss (Training and Validation)
     plt.figure(figsize=(10, 6))
     if 'Training Loss' in df.columns:
         plt.plot(df['Step'], df['Training Loss'], label='Training Loss', marker='o', linestyle='-')
@@ -85,10 +92,10 @@ def main():
     plt.legend()
     loss_path = os.path.join(args.output_dir, 'loss_plot.png')
     plt.savefig(loss_path, dpi=300, bbox_inches='tight')
-    print(f"Salvato: {loss_path}")
+    print(f"Saved: {loss_path}")
     plt.close()
 
-    # 2. Grafico per Entropy
+    # 2. Plot for Entropy
     if 'Entropy' in df.columns:
         plt.figure(figsize=(10, 6))
         plt.plot(df['Step'], df['Entropy'], label='Entropy', marker='o', color='green', linestyle='-')
@@ -99,13 +106,13 @@ def main():
         plt.legend()
         entropy_path = os.path.join(args.output_dir, 'entropy_plot.png')
         plt.savefig(entropy_path, dpi=300, bbox_inches='tight')
-        print(f"Salvato: {entropy_path}")
+        print(f"Saved: {entropy_path}")
         plt.close()
 
-    # 3. Grafico per Mean Token Accuracy
+    # 3. Plot for Mean Token Accuracy
     if 'Mean Token Accuracy' in df.columns:
         plt.figure(figsize=(10, 6))
-        # Rimuove le righe con NaN (es. il primo step che non ha questo dato)
+        # Remove rows with NaN (e.g., the first step which might lack this data)
         valid_acc = df.dropna(subset=['Mean Token Accuracy'])
         plt.plot(valid_acc['Step'], valid_acc['Mean Token Accuracy'], label='Mean Token Accuracy', marker='o', color='purple', linestyle='-')
         plt.title('Mean Token Accuracy over Steps')
@@ -115,10 +122,10 @@ def main():
         plt.legend()
         acc_path = os.path.join(args.output_dir, 'accuracy_plot.png')
         plt.savefig(acc_path, dpi=300, bbox_inches='tight')
-        print(f"Salvato: {acc_path}")
+        print(f"Saved: {acc_path}")
         plt.close()
 
-    print("Generazione dei grafici completata!")
+    print("Plot generation completed!")
 
 if __name__ == "__main__":
     main()
