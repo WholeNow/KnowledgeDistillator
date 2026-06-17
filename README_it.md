@@ -126,7 +126,7 @@ Metriche del **Student Distillato** (SmolLM 135M) valutate su 150 campioni del t
 
 ### 1. Apri il notebook su Colab
 
-<a target="_blank" href="https://colab.research.google.com/github/WholeNow/KnowledgeDistillator/blob/main/training.ipynb">
+<a target="_blank" href="https://colab.research.google.com/github/WholeNow/SmolLM-KD/blob/main/training.ipynb">
   <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
 </a>
 
@@ -193,7 +193,7 @@ Al termine del training, il modello è già salvato localmente nella sessione Co
 
 ### 1. Apri il notebook su Colab
 
-<a target="_blank" href="https://colab.research.google.com/github/WholeNow/KnowledgeDistillator/blob/main/Chat.ipynb">
+<a target="_blank" href="https://colab.research.google.com/github/WholeNow/SmolLM-KD/blob/main/Chat.ipynb">
   <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
 </a>
 

@@ -127,7 +127,7 @@ Metrics of the **Distilled Student** (SmolLM 135M) evaluated on 150 samples from
 
 ### 1. Open the notebook in Colab
 
-<a target="_blank" href="https://colab.research.google.com/github/WholeNow/KnowledgeDistillator/blob/main/training.ipynb">
+<a target="_blank" href="https://colab.research.google.com/github/WholeNow/SmolLM-KD/blob/main/training.ipynb">
   <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
 </a>
 
@@ -194,7 +194,7 @@ At the end of training, the model is already saved locally in the Colab session.
 
 ### 1. Open the notebook in Colab
 
-<a target="_blank" href="https://colab.research.google.com/github/WholeNow/KnowledgeDistillator/blob/main/Chat.ipynb">
+<a target="_blank" href="https://colab.research.google.com/github/WholeNow/SmolLM-KD/blob/main/Chat.ipynb">
   <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
 </a>
 
