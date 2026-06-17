@@ -1,4 +1,4 @@
-# KnowledgeDistillator
+# SmolLM-KD
 
 **Knowledge Distillation** project for the Deep Learning and Applications course: the responses of a Teacher model are used as pseudo-labels to train a smaller Student model on two tasks:
 
@@ -13,9 +13,9 @@
 2. [Models](#models)
 3. [Datasets](#datasets)
 4. [Project Structure](#project-structure)
-5. [Step-by-step Guide: Training](#step-by-step-guide-training)
-6. [Step-by-step Guide: Chat](#step-by-step-guide-chat)
-7. [Push to HuggingFace](#push-to-huggingface)
+5. [Results](#results)
+6. [Guide: Training](#guide-training)
+7. [Guide: Chat](#guide-chat)
 8. [Utility Scripts](#utility-scripts)
 
 ---
@@ -84,14 +84,14 @@ KnowledgeDistillator/
 │   └── plot_metrics.py                ← comparative metric charts
 │
 └── results/
-    ├── QA/
+    ├── question_answering/
     │   ├── prompt_1/
     │   │   ├── model/            ← final Student model
     │   │   ├── checkpoints/      ← intermediate training checkpoints
     │   │   └── dataset_teacher/  ← dataset distilled by the Teacher
     │   ├── prompt_2/
     │   └── prompt_3/
-    └── Summarization/
+    └── summarization/
         ├── prompt_1/
         ├── prompt_2/
         └── prompt_3/
@@ -127,7 +127,7 @@ Metrics of the **Distilled Student** (SmolLM 135M) evaluated on 150 samples from
 
 ### 1. Open the notebook in Colab
 
-<a target="_blank" href="https://colab.research.google.com/github/WholeNow/KnowledgeDistillator/blob/main/training.ipynb">
+<a target="_blank" href="https://colab.research.google.com/github/WholeNow/SmolLM-KD/blob/main/training.ipynb">
   <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
 </a>
 
@@ -194,7 +194,7 @@ At the end of training, the model is already saved locally in the Colab session.
 
 ### 1. Open the notebook in Colab
 
-<a target="_blank" href="https://colab.research.google.com/github/WholeNow/KnowledgeDistillator/blob/main/Chat.ipynb">
+<a target="_blank" href="https://colab.research.google.com/github/WholeNow/SmolLM-KD/blob/main/Chat.ipynb">
   <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
 </a>
 

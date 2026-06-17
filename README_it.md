@@ -1,6 +1,5 @@
-# KnowledgeDistillator
-
-Progetto di **Knowledge Distillation** per NLP: le risposte di un modello Teacher vengono usate come pseudo-label per addestrare un modello Student più piccolo, su due task:
+# SmolLM-KD
+Progetto di **Knowledge Distillation** per il corso di Deep Learning and Applications: le risposte di un modello Teacher vengono usate come pseudo-label per addestrare un modello Student più piccolo, su due task:
 
 - **Summarization** — riassunto di dialoghi (dataset SAMSum)
 - **Question Answering** — risposta a domande (dataset Databricks Dolly 15k)
@@ -13,9 +12,9 @@ Progetto di **Knowledge Distillation** per NLP: le risposte di un modello Teache
 2. [Modelli](#modelli)
 3. [Dataset](#dataset)
 4. [Struttura del progetto](#struttura-del-progetto)
-5. [Guida passo passo: Training](#guida-passo-passo-training)
-6. [Guida passo passo: Chat](#guida-passo-passo-chat)
-7. [Push su HuggingFace](#push-su-huggingface)
+5. [Risultati](#risultati)
+6. [Guida: Training](#guida-training)
+7. [Guidao: Chat](#guida-chat)
 8. [Script di utilità](#script-di-utilità)
 
 ---
@@ -84,14 +83,14 @@ KnowledgeDistillator/
 │   └── plot_metrics.py                ← grafici comparativi delle metriche
 │
 └── results/
-    ├── QA/
+    ├── question_answering/
     │   ├── prompt_1/
     │   │   ├── model/            ← modello Student finale
     │   │   ├── checkpoints/      ← checkpoint intermedi del training
     │   │   └── dataset_teacher/  ← dataset distillato dal Teacher
     │   ├── prompt_2/
     │   └── prompt_3/
-    └── Summarization/
+    └── summarization/
         ├── prompt_1/
         ├── prompt_2/
         └── prompt_3/
@@ -127,7 +126,7 @@ Metriche del **Student Distillato** (SmolLM 135M) valutate su 150 campioni del t
 
 ### 1. Apri il notebook su Colab
 
-<a target="_blank" href="https://colab.research.google.com/github/WholeNow/KnowledgeDistillator/blob/main/training.ipynb">
+<a target="_blank" href="https://colab.research.google.com/github/WholeNow/SmolLM-KD/blob/main/training.ipynb">
   <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
 </a>
 
@@ -194,7 +193,7 @@ Al termine del training, il modello è già salvato localmente nella sessione Co
 
 ### 1. Apri il notebook su Colab
 
-<a target="_blank" href="https://colab.research.google.com/github/WholeNow/KnowledgeDistillator/blob/main/Chat.ipynb">
+<a target="_blank" href="https://colab.research.google.com/github/WholeNow/SmolLM-KD/blob/main/Chat.ipynb">
   <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
 </a>
 
